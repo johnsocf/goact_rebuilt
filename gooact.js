@@ -34,6 +34,7 @@
      */
     const setAttribute = (dom, key, value) => {
         if (typeof value == 'function' && key.startsWith('on')) {
+            const eventType = key.slice(2).toLowerCase();
             dom.__gooactHandlers = dom.__gooactHandlers || {};
             dom.removeEventListener(eventType, dom.__gooactHandlers[eventType]);
             dom.__gooactHandlers[eventType] = value;
@@ -50,6 +51,7 @@
             dom.setAttribute(key, value);
         }
     };
+
 
     /**
      * given vdom and parent with default null if empty
@@ -136,6 +138,7 @@
                 // otherwise non matching keys cause a render from scratch
                 // then key is deleted so that item doesn't have to be removed in next step
                 // patch just kind of moves it on and looks at it's children and replaces it if it needs to
+
                 const key = child.props && child.props.key || `__index_${index}`;
                 dom.appendChild(pool[key] ? patch(pool[key], child) : render(child, dom));
                 delete pool[key];

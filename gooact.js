@@ -1,6 +1,5 @@
 /* Gooact by SweetPalma, 2018. All rights reserved. */
-(() => {
-    'use strict';
+(() => { 'use strict';
 
     /**
      * element is a lightweight object representation of the real dom.
@@ -15,7 +14,8 @@
     const createElement = (type, props, ...children) => {
         if (props === null) props = {};
         return {type, props, children};
-    }
+    };
+
 
     /**
      * dom is given event listeners
@@ -52,7 +52,6 @@
         }
     };
 
-
     /**
      * given vdom and parent with default null if empty
      * recursive function for building nodes within nodes
@@ -67,7 +66,7 @@
      * @param vdom
      * @param parent
      */
-    const render = (vdom, parent = null) => {
+    const render = (vdom, parent=null) => {
         const mount = parent ? (el => parent.appendChild(el)) : (el => el);
         if (typeof vdom == 'string' || typeof vdom == 'number') {
             return mount(document.createTextNode(vdom));
@@ -107,7 +106,7 @@
      * @param vdom
      * @param parent
      */
-    const patch = (dom, vdom, parent = dom.parentNode) => {
+    const patch = (dom, vdom, parent=dom.parentNode) => {
         // replaceChild is a lambda method on the dom that replaces
         // param in position 1 with that in position 2
         const replace = parent ? el => (parent.replaceChild(el, dom) && el) : (el => el);
@@ -124,11 +123,6 @@
             const active = document.activeElement;
             // ... is a nifty ES6 feature for bringing in each item in an array.
             [].concat(...dom.childNodes).map((child, index) => {
-                // this adds an index key string based on index in the list
-                const key = child.__gooactKey || `__index_${index}`;
-                pool[key] = child;
-            });
-            [].concat(...vdom.children).map((child, index) => {
                 // this is the magic
                 // dom elements are appended if they have matching keys
                 // between dom and vdom
@@ -138,7 +132,10 @@
                 // otherwise non matching keys cause a render from scratch
                 // then key is deleted so that item doesn't have to be removed in next step
                 // patch just kind of moves it on and looks at it's children and replaces it if it needs to
-
+                const key = child.__gooactKey || `__index_${index}`;
+                pool[key] = child;
+            });
+            [].concat(...vdom.children).map((child, index) => {
                 const key = child.props && child.props.key || `__index_${index}`;
                 dom.appendChild(pool[key] ? patch(pool[key], child) : render(child, dom));
                 delete pool[key];
@@ -159,7 +156,7 @@
                 pool[key].remove();
             }
             // dom attrs are removed
-            for (const attr of dom.attributes) dom.removeAttribute(dom, prop, vdom.props[prop]);
+            for (const attr of dom.attributes) dom.removeAttribute(attr.name);
             // vdom attributes are set
             for (const prop in vdom.props) setAttribute(dom, prop, vdom.props[prop]);
             // focus is returned after memoization
@@ -168,7 +165,7 @@
             // we can finally render again.
             return dom;
         }
-    }
+    };
 
 
     /**
@@ -188,30 +185,29 @@
      * and each has a type, monoidic!
      */
     class Component {
+        // define key component props and state
+        // props can be passed from within the app like when redux is hooked up.
+        // state is specific to the component.
         constructor(props) {
-            // define key component props and state
-            // props can be passed from within the app like when redux is hooked up.
-            // state is specific to the component.
             this.props = props || {};
             this.state = null;
         }
 
+        // if this is a node in the new tree, a clas component
+        // and it is a prototype of an existing type
+        // create an instance,
+        // assign to instance prop on itself
+        // assign instance a key
+        // attach to dom
+        // fire off lifecycle hooks right before render and right after render and prop assignment.
+
         static render(vdom, parent=null) {
             const props = Object.assign({}, vdom.props, {children: vdom.children});
-
             if (Component.isPrototypeOf(vdom.type)) {
-                // if this is a node in the new tree, a clas component
-                // and it is a prototype of an existing type
-                // create an instance,
-                // assign to instance prop on itself
-                // assign instance a key
-                // attach to dom
-                // fire off lifecycle hooks right before render and right after render and prop assignment.
-
                 const instance = new (vdom.type)(props);
                 instance.componentWillMount();
                 instance.base = render(instance.render(), parent);
-                instance.base.__gooActInstance = instance;
+                instance.base.__gooactInstance = instance;
                 instance.base.__gooactKey = vdom.props.key;
                 instance.componentDidMount();
                 return instance.base;
@@ -229,7 +225,7 @@
                 // if so just pass new properties to it and patch difference
                 return patch(dom, dom.__gooactInstance.render(), parent);
             } else if (Component.isPrototypeOf(vdom.type)) {
-                // otherwise it's old news... same 'ol, same 'ol, and can just be rendered with no new instantiation
+                // otherwise it's old news... same 'ol, same 'ol, and can just be rendered with no new
                 const ndom = Component.render(vdom, parent);
                 return parent ? (parent.replaceChild(ndom, dom) && ndom) : (ndom);
             } else if (!Component.isPrototypeOf(vdom.type)) {
@@ -237,7 +233,8 @@
             }
         }
 
-        // constructor is called then this set state
+
+        // constructor is called then this set state when we update state from component
         setState(next) {
             const compat = (a) => typeof this.state == 'object' && typeof a == 'object';
             // check and see if component should update

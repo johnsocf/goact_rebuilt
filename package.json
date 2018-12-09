@@ -1,0 +1,22 @@
+{
+  "name": "gooact",
+  "version": "1.0.0",
+  "description": "React in 160 lines of JavaScript.",
+  "main": "gooact.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "react",
+    "tutorial",
+    "madness"
+  ],
+  "author": "SweetPalma",
+  "license": "MIT",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": ""
+}
